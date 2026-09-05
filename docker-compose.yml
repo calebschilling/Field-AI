@@ -3,9 +3,9 @@
 #   docker compose up -d --build
 #
 # What this does:
-#   Tailscale client  ->  host:8080  ->  api container  ->  /audio + Postgres
+#   Tailscale client  ->  host:8081  ->  api container  ->  inbox + /audio + Postgres
 #   worker container    ->  reads /audio + queued rows  ->  Whisper
-#   enhancer container  ->  reads done transcripts      ->  qwen3.6
+#   enhancer container  ->  reads done transcripts      ->  qwen2.5:14b
 #
 # Three containers, one image. They share the same host folder so the
 # worker can open the files the API just wrote.

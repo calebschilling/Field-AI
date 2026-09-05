@@ -3,187 +3,186 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Field</title>
+  <title>Field Notes</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1410'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23c4844a' stroke-width='2'/%3E%3Cpath d='M14 36c8-10 12 6 18-4 6-10 10 6 18-3' fill='none' stroke='%23f3ead6' stroke-width='2'/%3E%3Ccircle cx='42' cy='22' r='3' fill='%23c4844a'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,560;0,9..144,650;1,9..144,560&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0d100c;
-      --bg-glow: #1a2316;
-      --card: #171c14;
-      --card-hover: #1c2218;
-      --line: #2a3224;
-      --text: #ecefe4;
-      --muted: #8d9680;
-      --faint: #5e6654;
-      --gold: #d4b36a;
-      --queued: #d4b36a;
-      --processing: #7eb4d6;
-      --done: #8fba6a;
-      --failed: #d46a6a;
-      --review: #c9a06a;
-      --radius: 16px;
-      --header-h: 4.25rem;
-      --sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
-      --serif: "Fraunces", "Iowan Old Style", Palatino, Georgia, serif;
+      --walnut: #1a1410;
+      --walnut-2: #241c16;
+      --line: #3a2f26;
+      --cream: #f3ead6;
+      --cream-2: #e8dcc4;
+      --ink: #2a2218;
+      --ink-soft: #5c5146;
+      --copper: #c4844a;
+      --copper-soft: #e0b07a;
+      --moss: #6e8b5c;
+      --sky: #6a94b0;
+      --rose: #c45c4a;
+      --sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+      --serif: "Cormorant Garamond", "Iowan Old Style", Palatino, Georgia, serif;
     }
     * { box-sizing: border-box; }
-    html, body { min-height: 100%; }
+    html, body { height: 100%; }
     body {
       margin: 0;
       font-family: var(--sans);
-      background:
-        radial-gradient(900px 420px at 50% -80px, var(--bg-glow), transparent 70%),
-        var(--bg);
-      color: var(--text);
+      background: var(--walnut);
+      color: var(--cream);
       line-height: 1.5;
     }
     button, input { font: inherit; color: inherit; }
     button { cursor: pointer; }
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.75rem 1rem;
-      padding: 0.85rem 1.35rem;
-      background: color-mix(in srgb, var(--bg) 78%, transparent);
+    .app {
+      min-height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .rail {
+      background:
+        radial-gradient(500px 220px at 0 -40px, #3a2a1c, transparent 70%),
+        var(--walnut);
       border-bottom: 1px solid var(--line);
-      backdrop-filter: blur(14px);
+      padding: 1rem 1.15rem 0.9rem;
     }
     .brand {
       display: flex;
-      flex-direction: column;
-      gap: 0.05rem;
-      min-width: 6.5rem;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: inherit;
+      width: max-content;
     }
-    .brand h1 {
-      margin: 0;
+    .mark {
+      width: 2.6rem;
+      height: 2.6rem;
+      flex-shrink: 0;
+      color: var(--copper);
+    }
+    .brand-copy strong {
+      display: block;
       font-family: var(--serif);
-      font-size: 1.45rem;
-      font-weight: 560;
-      letter-spacing: -0.03em;
-      line-height: 1;
+      font-size: 1.85rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      line-height: 0.9;
+      text-transform: uppercase;
     }
-    .brand h1 em {
+    .brand-copy em {
+      display: block;
+      margin-top: 0.18rem;
       font-style: italic;
-      font-weight: 560;
-      color: var(--gold);
+      font-family: var(--serif);
+      font-size: 0.95rem;
+      color: var(--copper-soft);
+      letter-spacing: 0.04em;
     }
     #count {
-      color: var(--muted);
-      font-size: 0.78rem;
-      letter-spacing: 0.02em;
+      display: block;
+      margin: 0.65rem 0 0.8rem;
+      color: #9a8b7a;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
     .tools {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem;
-      margin-left: auto;
+      gap: 0.45rem;
     }
-    .search {
-      position: relative;
-    }
+    .search { position: relative; flex: 1 1 12rem; }
     .search input {
-      width: min(18rem, 72vw);
-      background: var(--card);
+      width: 100%;
+      background: var(--walnut-2);
       border: 1px solid var(--line);
       border-radius: 999px;
-      padding: 0.42rem 0.9rem 0.42rem 2rem;
+      padding: 0.45rem 0.85rem 0.45rem 2rem;
       outline: none;
     }
-    .search input:focus {
-      border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
-    }
+    .search input:focus { border-color: var(--copper); }
     .search::before {
       content: "";
       position: absolute;
       left: 0.7rem;
       top: 50%;
-      width: 0.7rem;
-      height: 0.7rem;
+      width: 0.65rem;
+      height: 0.65rem;
       transform: translateY(-50%);
-      border: 1.5px solid var(--muted);
+      border: 1.5px solid #9a8b7a;
       border-radius: 50%;
       pointer-events: none;
     }
     .day-filter {
       display: flex;
       align-items: center;
-      gap: 0.35rem;
-      background: var(--card);
+      gap: 0.3rem;
+      background: var(--walnut-2);
       border: 1px solid var(--line);
       border-radius: 999px;
-      padding: 0.15rem 0.2rem 0.15rem 0.7rem;
+      padding: 0.15rem 0.25rem 0.15rem 0.7rem;
     }
-    .day-filter label {
-      color: var(--muted);
-      font-size: 0.78rem;
-    }
+    .day-filter label { color: #9a8b7a; font-size: 0.75rem; }
     .day-filter input[type="date"] {
       background: transparent;
-      color: var(--text);
       border: 0;
-      padding: 0.28rem 0.35rem;
+      color: var(--cream);
+      padding: 0.28rem 0.4rem;
     }
     .ghost, .danger-ghost {
       border-radius: 999px;
       border: 1px solid var(--line);
-      background: var(--card);
+      background: var(--walnut-2);
       padding: 0.4rem 0.8rem;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
-    .ghost:hover { background: var(--card-hover); }
-    .danger-ghost {
-      color: color-mix(in srgb, var(--failed) 80%, var(--text));
-      border-color: color-mix(in srgb, var(--failed) 35%, var(--line));
+    .ghost:hover { border-color: var(--copper); }
+    .danger-ghost { color: #e8a39a; }
+    .danger-ghost:hover { background: color-mix(in srgb, var(--rose) 16%, var(--walnut-2)); }
+    #index { display: none; }
+    main {
+      min-width: 0;
+      padding: 1.1rem 1.1rem 3rem;
     }
-    .danger-ghost:hover {
-      background: color-mix(in srgb, var(--failed) 12%, var(--card));
-    }
-    main { max-width: 40rem; margin: 0 auto; padding: 1.4rem 1.15rem 4rem; }
-    .day { margin-bottom: 1.75rem; }
+    .day { margin-bottom: 1.6rem; }
     .day-label {
-      margin: 0 0 0.7rem 0.15rem;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
+      margin: 0 0 0.55rem 0.1rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: #9a8b7a;
     }
     .empty {
       text-align: center;
-      padding: 5rem 1rem;
+      padding: 4.5rem 1rem;
+      color: var(--ink-soft);
     }
     .empty h2 {
       font-family: var(--serif);
-      font-weight: 560;
-      font-size: 1.6rem;
-      margin: 0 0 0.4rem;
+      font-size: 2.2rem;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--cream);
+      margin: 0 0 0.35rem;
     }
-    .empty p { margin: 0; color: var(--muted); }
+    .empty p { margin: 0; color: #9a8b7a; }
     article {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 1.05rem 1.15rem 1.15rem;
-      margin-bottom: 0.7rem;
-      transition: background 0.15s ease, border-color 0.15s ease;
-    }
-    article:hover {
-      background: var(--card-hover);
-      border-color: color-mix(in srgb, var(--gold) 18%, var(--line));
+      background: var(--cream);
+      color: var(--ink);
+      border-radius: 8px 22px 8px 22px;
+      padding: 1.15rem 1.2rem 1.25rem;
+      margin-bottom: 0.85rem;
+      box-shadow: 0 10px 28px rgb(0 0 0 / 0.22);
     }
     .card-top {
       display: flex;
       align-items: flex-start;
       gap: 0.6rem;
-      margin-bottom: 0.55rem;
+      margin-bottom: 0.45rem;
     }
     .meta {
       display: flex;
@@ -191,158 +190,218 @@
       gap: 0.35rem 0.65rem;
       align-items: center;
       flex: 1;
-      min-width: 0;
       font-size: 0.8rem;
     }
-    .when { color: var(--muted); }
+    .when { color: var(--ink-soft); }
     .status {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
+      gap: 0.3rem;
+      font-size: 0.64rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 0.18rem 0.5rem;
-      border-radius: 999px;
-      border: 1px solid color-mix(in srgb, currentColor 40%, var(--line));
-      background: color-mix(in srgb, currentColor 10%, transparent);
+      padding: 0.18rem 0.48rem;
+      border-radius: 3px;
+      border: 1px solid currentColor;
     }
-    .status::before {
-      content: "";
-      width: 0.4rem;
-      height: 0.4rem;
-      border-radius: 50%;
-      background: currentColor;
-    }
-    .queued, .review { color: var(--queued); }
-    .processing { color: var(--processing); }
-    .done { color: var(--done); }
-    .failed { color: var(--failed); }
+    .queued, .review { color: #9a6230; }
+    .processing { color: #3d6f88; }
+    .done { color: #4d6d3d; }
+    .failed { color: var(--rose); }
     .title {
       font-family: var(--serif);
-      font-size: 1.28rem;
-      font-weight: 560;
+      font-size: 1.7rem;
+      font-weight: 600;
       letter-spacing: -0.02em;
-      line-height: 1.25;
-      margin: 0 0 0.2rem;
+      line-height: 1.15;
+      margin: 0 0 0.15rem;
     }
-    .filename {
-      margin: 0 0 0.7rem;
-      color: var(--faint);
-      font-size: 0.78rem;
-    }
+    .filename { margin: 0 0 0.75rem; color: #8a7b6a; font-size: 0.75rem; }
     .icon-delete {
-      flex-shrink: 0;
       border: 0;
       background: transparent;
-      color: var(--faint);
-      padding: 0.15rem 0.25rem;
-      border-radius: 8px;
-      font-size: 0.78rem;
+      color: #8a7b6a;
+      padding: 0.1rem 0.25rem;
+      font-size: 0.75rem;
     }
-    .icon-delete:hover {
-      color: var(--failed);
-      background: color-mix(in srgb, var(--failed) 10%, transparent);
-    }
-    .summary { font-size: 0.98rem; }
+    .icon-delete:hover { color: var(--rose); }
+    .summary { font-size: 1.02rem; }
     .summary h2 {
       font-family: var(--sans);
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--muted);
-      margin: 0.9rem 0 0.3rem;
+      color: var(--copper);
+      margin: 0.95rem 0 0.3rem;
     }
-    .summary h2:first-child { margin-top: 0.15rem; }
-    .summary h3 {
-      font-size: 0.92rem;
-      margin: 0.7rem 0 0.3rem;
-      color: var(--muted);
-    }
-    .summary ul { margin: 0.15rem 0 0.35rem; padding-left: 1.15rem; }
-    .summary li { margin: 0.18rem 0; }
+    .summary h2:first-child { margin-top: 0.2rem; }
+    .summary h3 { font-size: 0.95rem; margin: 0.7rem 0 0.3rem; color: var(--ink-soft); }
+    .summary ul { margin: 0.1rem 0 0.3rem; padding-left: 1.15rem; }
+    .summary li { margin: 0.2rem 0; }
     .summary p { margin: 0.25rem 0; }
-    .aria-note {
-      margin: 0.85rem 0 0;
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-    .byline { color: var(--faint); font-size: 0.78rem; margin: 0.45rem 0 0; }
-    .summary-msg { color: var(--muted); font-size: 0.92rem; margin: 0.4rem 0 0.2rem; }
-    .summary-msg.error { color: var(--failed); }
-    details.raw {
-      margin-top: 0.85rem;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
+    .aria-note { margin: 0.9rem 0 0; color: #6d5e4f; font-size: 0.88rem; }
+    .byline { color: #8a7b6a; font-size: 0.75rem; margin: 0.4rem 0 0; }
+    .summary-msg { color: var(--ink-soft); margin: 0.4rem 0; }
+    .summary-msg.error { color: var(--rose); }
+    details.raw { margin-top: 0.9rem; color: var(--ink-soft); font-size: 0.9rem; }
     details.raw summary {
       cursor: pointer;
-      color: var(--muted);
-      font-size: 0.8rem;
-      letter-spacing: 0.04em;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
     }
     .transcript {
       white-space: pre-wrap;
       margin-top: 0.5rem;
-      color: var(--text);
-      background: color-mix(in srgb, var(--bg) 55%, transparent);
+      background: var(--cream-2);
       border-radius: 10px;
       padding: 0.7rem 0.8rem;
+      color: var(--ink);
     }
-    .error { color: var(--failed); white-space: pre-wrap; margin: 0.4rem 0; }
-    .player { margin-top: 0.95rem; }
-    audio {
-      width: 100%;
-      height: 2.25rem;
-      accent-color: var(--gold);
-    }
+    .error { color: var(--rose); white-space: pre-wrap; margin: 0.4rem 0; }
+    .player { margin-top: 1rem; }
+    audio { width: 100%; height: 2.2rem; accent-color: var(--copper); }
+    #deck { display: none; }
     dialog {
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: var(--card);
-      color: var(--text);
-      padding: 1.25rem 1.3rem 1.15rem;
+      border: 0;
+      border-radius: 8px 22px 8px 22px;
+      background: var(--cream);
+      color: var(--ink);
+      padding: 1.3rem 1.35rem 1.2rem;
       width: min(22rem, calc(100vw - 2rem));
     }
-    dialog::backdrop { background: rgb(0 0 0 / 0.55); }
-    dialog p { margin: 0 0 1rem; line-height: 1.4; }
-    dialog p strong { font-weight: 700; }
-    .dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.5rem;
+    dialog::backdrop { background: rgb(20 14 10 / 0.62); }
+    dialog p { margin: 0 0 1rem; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+    .dialog-actions .ghost, .dialog-actions .danger-ghost {
+      background: var(--cream-2);
+      color: var(--ink);
+      border-color: #d5c6ae;
     }
-    .dialog-actions .danger-ghost { background: color-mix(in srgb, var(--failed) 14%, var(--card)); }
-    @media (max-width: 720px) {
-      header { padding: 0.75rem 1rem; }
-      .tools { width: 100%; margin-left: 0; }
-      .search, .search input { width: 100%; }
-      .title { font-size: 1.15rem; }
+    .dialog-actions .danger-ghost { color: var(--rose); }
+
+    @media (min-width: 980px) {
+      .app {
+        grid-template-rows: none;
+        grid-template-columns: minmax(20rem, 24rem) 1fr;
+        height: 100vh;
+      }
+      .rail {
+        border-bottom: 0;
+        border-right: 1px solid var(--line);
+        padding: 1.6rem 1.2rem 1.2rem;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .brand-copy strong { font-size: 2.15rem; letter-spacing: 0.18em; }
+      .mark { width: 3.1rem; height: 3.1rem; }
+      #index {
+        display: block;
+        margin-top: 1.15rem;
+        padding-right: 0.2rem;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 3.4rem 1fr;
+        gap: 0.15rem 0.65rem;
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: 0;
+        border-left: 2px solid transparent;
+        border-radius: 0 10px 10px 0;
+        padding: 0.55rem 0.65rem;
+        margin-bottom: 0.15rem;
+        color: #d8cbb8;
+      }
+      .row:hover { background: var(--walnut-2); }
+      .row.active {
+        background: var(--walnut-2);
+        border-left-color: var(--copper);
+        color: var(--cream);
+      }
+      .row-time {
+        grid-row: 1 / 3;
+        align-self: center;
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 0.95rem;
+        color: var(--copper-soft);
+      }
+      .row-title {
+        font-size: 0.92rem;
+        font-weight: 500;
+        line-height: 1.25;
+      }
+      .row-status {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #9a8b7a;
+      }
+      .row.active .row-status { color: var(--copper-soft); }
+      main {
+        padding: 2.2rem 8vw 3rem;
+        overflow: auto;
+        background:
+          radial-gradient(900px 420px at 80% -10%, #3a2a1c, transparent 55%),
+          var(--walnut);
+      }
+      #list .day { display: none; }
+      #reader article {
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 2.1rem 2.2rem 2rem;
+        border-radius: 6px 28px 8px 28px;
+        background:
+          linear-gradient(180deg, #f7f0e0, var(--cream) 40%);
+        box-shadow:
+          0 1px 0 #fff6e6 inset,
+          0 18px 50px rgb(0 0 0 / 0.28);
+      }
+      #reader .title { font-size: 2.35rem; font-style: italic; }
+      #reader .summary { font-size: 1.08rem; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <h1>Field<em>.</em></h1>
+  <div class="app">
+    <aside class="rail">
+      <a class="brand" href="/">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="32" cy="32" r="23.5" fill="none" stroke="currentColor" stroke-width="0.8" stroke-dasharray="1.8 2.6"/>
+          <path d="M12 38c8-11 13 7 20-5 7-12 11 8 20-4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="43" cy="22" r="3.2" fill="currentColor"/>
+        </svg>
+        <span class="brand-copy">
+          <strong>Field</strong>
+          <em>notes from the day</em>
+        </span>
+      </a>
       <span id="count">loading…</span>
-    </div>
-    <div class="tools">
-      <div class="search">
-        <input type="search" id="q" placeholder="Search notes" autocomplete="off">
+      <div class="tools">
+        <div class="search">
+          <input type="search" id="q" placeholder="Search the desk" autocomplete="off">
+        </div>
+        <div class="day-filter">
+          <label for="day">Day</label>
+          <input type="date" id="day">
+        </div>
+        <button type="button" class="ghost" id="all-days">All days</button>
+        <button type="button" class="danger-ghost" id="delete-visible">Delete these</button>
       </div>
-      <div class="day-filter">
-        <label for="day">Day</label>
-        <input type="date" id="day">
-      </div>
-      <button type="button" class="ghost" id="all-days">All days</button>
-      <button type="button" class="danger-ghost" id="delete-visible">Delete these</button>
-    </div>
-  </header>
-  <main id="list"></main>
+      <nav id="index" aria-label="Notes"></nav>
+    </aside>
+    <main>
+      <div id="reader"></div>
+      <div id="list"></div>
+      <div id="deck"></div>
+    </main>
+  </div>
   <dialog id="confirm-dialog">
     <p id="confirm-msg"></p>
     <div class="dialog-actions">
@@ -352,6 +411,9 @@
   </dialog>
   <script>
     const list = document.getElementById("list");
+    const reader = document.getElementById("reader");
+    const deck = document.getElementById("deck");
+    const index = document.getElementById("index");
     const count = document.getElementById("count");
     const dayInput = document.getElementById("day");
     const qInput = document.getElementById("q");
@@ -361,8 +423,13 @@
     const missingWav = new Set();
     let selectedDay = "";
     let selectedQuery = "";
+    let selectedId = "";
     let searchTimer = 0;
     let confirmResolve = null;
+
+    function desktop() {
+      return window.matchMedia("(min-width: 980px)").matches;
+    }
 
     function fmtNum(n) {
       if (n === null || n === undefined || n === "") return null;
@@ -607,7 +674,8 @@
         '<details class="raw" hidden><summary>Transcript</summary>' +
           '<div class="transcript"></div></details>';
       fillCard(article, job);
-      article.querySelector(".icon-delete").addEventListener("click", () => {
+      article.querySelector(".icon-delete").addEventListener("click", (e) => {
+        e.stopPropagation();
         deleteOneSafe(job.id, extractTitle(job));
       });
       cards.set(job.id, article);
@@ -619,6 +687,65 @@
       if (!article) article = makeCard(job);
       else fillCard(article, job);
       return article;
+    }
+
+    function renderIndex(jobs) {
+      const frag = document.createDocumentFragment();
+      let currentKey = "";
+      for (const job of jobs) {
+        const key = dayKey(job.created_at);
+        if (key !== currentKey) {
+          currentKey = key;
+          const h = document.createElement("h2");
+          h.className = "day-label";
+          h.textContent = dayLabel(job.created_at);
+          frag.append(h);
+        }
+        const look = phase(job);
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "row" + (job.id === selectedId ? " active" : "");
+        row.dataset.id = job.id;
+        row.innerHTML =
+          '<span class="row-time"></span>' +
+          '<span class="row-title"></span>' +
+          '<span class="row-status"></span>';
+        row.querySelector(".row-time").textContent = fmtWhen(job.created_at);
+        row.querySelector(".row-title").textContent = extractTitle(job);
+        row.querySelector(".row-status").textContent = look.label;
+        row.addEventListener("click", () => select(job.id));
+        frag.append(row);
+      }
+      index.replaceChildren(frag);
+    }
+
+    function select(id) {
+      selectedId = id;
+      const article = cards.get(id);
+      if (!article) return;
+      for (const [oid, node] of cards) {
+        if (oid !== id) deck.append(node);
+      }
+      reader.replaceChildren(article);
+      for (const row of index.querySelectorAll(".row")) {
+        row.classList.toggle("active", row.dataset.id === id);
+      }
+    }
+
+    function showEmpty() {
+      cards.clear();
+      selectedId = "";
+      index.replaceChildren();
+      reader.replaceChildren();
+      const copy = emptyCopy();
+      const wrap = document.createElement("div");
+      wrap.className = "empty";
+      const h = document.createElement("h2");
+      h.textContent = copy.title;
+      const p = document.createElement("p");
+      p.textContent = copy.body;
+      wrap.append(h, p);
+      list.replaceChildren(wrap);
     }
 
     function askDelete() {
@@ -656,6 +783,7 @@
       const article = cards.get(id);
       if (article) article.remove();
       cards.delete(id);
+      if (selectedId === id) selectedId = "";
       pruneEmptyDays();
       setCount(cards.size);
       return true;
@@ -672,7 +800,7 @@
         count.textContent = n === 1 ? "1 match" : n + " matches";
         return;
       }
-      count.textContent = n === 1 ? "1 note" : n + " notes";
+      count.textContent = n === 1 ? "1 note on the desk" : n + " notes on the desk";
     }
 
     async function deleteOneSafe(id, label) {
@@ -680,6 +808,7 @@
       const ok = await askDelete();
       if (!ok) return;
       await removeJob(id);
+      refresh();
     }
 
     async function deleteVisible() {
@@ -695,6 +824,7 @@
       for (const id of ids) {
         if (!await removeJob(id)) break;
       }
+      refresh();
     }
 
     function audioUrl() {
@@ -707,15 +837,15 @@
 
     function emptyCopy() {
       if (selectedQuery && selectedDay) {
-        return { title: "Nothing here", body: "No notes on " + selectedDay + " match “" + selectedQuery + "”." };
+        return { title: "A blank page", body: "No notes on " + selectedDay + " match “" + selectedQuery + "”." };
       }
       if (selectedQuery) {
-        return { title: "Nothing matches", body: "No notes match “" + selectedQuery + "”." };
+        return { title: "Nothing in the stack", body: "No notes match “" + selectedQuery + "”." };
       }
       if (selectedDay) {
         return { title: "A quiet day", body: "No recordings on " + selectedDay + "." };
       }
-      return { title: "No notes yet", body: "Recordings show up here after a wav is uploaded." };
+      return { title: "The desk is clear", body: "Recordings land here after a wav is uploaded." };
     }
 
     async function refresh() {
@@ -725,16 +855,7 @@
         const jobs = await res.json();
         setCount(jobs.length);
         if (!jobs.length) {
-          cards.clear();
-          const copy = emptyCopy();
-          const wrap = document.createElement("div");
-          wrap.className = "empty";
-          const h = document.createElement("h2");
-          h.textContent = copy.title;
-          const p = document.createElement("p");
-          p.textContent = copy.body;
-          wrap.append(h, p);
-          list.replaceChildren(wrap);
+          showEmpty();
           return;
         }
         const openIds = new Set();
@@ -761,19 +882,29 @@
           if (!seen.has(id)) {
             article.remove();
             cards.delete(id);
+            if (selectedId === id) selectedId = "";
           }
         }
-        const frag = document.createDocumentFragment();
-        for (const group of groups) {
-          const section = document.createElement("section");
-          section.className = "day";
-          const heading = document.createElement("h2");
-          heading.className = "day-label";
-          heading.textContent = group.label;
-          section.append(heading, ...group.articles);
-          frag.append(section);
+        if (desktop()) {
+          list.replaceChildren();
+          if (!selectedId || !cards.has(selectedId)) selectedId = jobs[0].id;
+          renderIndex(jobs);
+          select(selectedId);
+        } else {
+          reader.replaceChildren();
+          selectedId = "";
+          const frag = document.createDocumentFragment();
+          for (const group of groups) {
+            const section = document.createElement("section");
+            section.className = "day";
+            const heading = document.createElement("h2");
+            heading.className = "day-label";
+            heading.textContent = group.label;
+            section.append(heading, ...group.articles);
+            frag.append(section);
+          }
+          list.replaceChildren(frag);
         }
-        list.replaceChildren(frag);
       } catch (err) {
         count.textContent = "could not load";
       }
@@ -798,6 +929,7 @@
     document.getElementById("delete-visible").addEventListener("click", () => {
       deleteVisible();
     });
+    window.matchMedia("(min-width: 980px)").addEventListener("change", () => refresh());
 
     refresh();
     setInterval(refresh, 4000);
