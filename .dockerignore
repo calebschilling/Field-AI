@@ -1,0 +1,12 @@
+# Do not put secrets, venvs, or recordings in the image.
+.venv
+.git
+.gitignore
+.env
+audio
+data
+uploads
+__pycache__
+*.pyc
+test.wav
+open-ai-llm.py

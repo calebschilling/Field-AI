@@ -1,0 +1,66 @@
+# Field-AI on the HOST machine (the one that already runs Tailscale).
+#
+#   docker compose up -d --build
+#
+# What this does:
+#   Tailscale client  ->  host:8080  ->  api container  ->  /audio + Postgres
+#   worker container    ->  reads /audio + queued rows  ->  Whisper
+#   enhancer container  ->  reads done transcripts      ->  qwen3.6
+#
+# Three containers, one image. They share the same host folder so the
+# worker can open the files the API just wrote.
+#
+# Persistence: ./data/audio is a bind mount on the HOST disk, not a
+# Docker named volume. Rebuilds, `docker compose down`, and even
+# `docker compose down -v` do not delete those wavs. The files live at:
+#   <this-project>/data/audio   on the host
+#   /audio                      inside both containers
+#
+# Port 8080 on the host is the stable Tailscale URL. Inside the api
+# container the app also listens on 8080; you can change the left side
+# later (e.g. "9000:8080") without touching Python.
+#
+# Postgres already lives on the host — this compose file does not start it.
+
+services:
+  api:
+    image: field-ai
+    build: .
+    command: python main.py
+    env_file: .env
+    environment:
+      # Override the Cursor-dev AUDIO_DIR from .env.
+      AUDIO_DIR: /audio
+    ports:
+      # Host 8080 is Leantime. App still listens on 8080 inside the container.
+      - "8081:8080"
+    extra_hosts:
+      # Lets DATABASE_URL use host.docker.internal if Postgres is only
+      # bound to 127.0.0.1 on the host. The Tailscale IP in .env also works
+      # when Docker can route 100.x (it usually can on this host).
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data/audio:/audio
+    restart: unless-stopped
+
+  worker:
+    image: field-ai
+    command: python worker.py
+    env_file: .env
+    environment:
+      AUDIO_DIR: /audio
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data/audio:/audio
+    restart: unless-stopped
+
+  enhancer:
+    image: field-ai
+    command: python enhance.py
+    env_file: .env
+    environment:
+      AUDIO_DIR: /audio
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
