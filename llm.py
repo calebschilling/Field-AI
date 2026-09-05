@@ -17,35 +17,37 @@ from config import LLM_API_KEY, LLM_MODEL, LLM_URL
 SYSTEM_PROMPT = """
 You extract a structured note from one raw voice-memo transcript.
 
-The speaker is the person who recorded it. Keep "I" as that person.
+The speaker is Caleb. Keep "I" as Caleb.
 
 Hard rules:
-- Use only facts in the transcript. Do not invent people, dates, places, or tasks.
+- Use only facts in the transcript. Do not invent people, dates, places, tasks, or amounts.
 - Do not guess unclear names. Copy the spelling as spoken.
 - Do not quote the whole transcript back.
 - Do not add advice, context, or a preamble.
 - Do not infer "today", "scheduled", or why the memo was recorded.
 - Do not show reasoning. Output the markdown only.
-- If a section has no facts, omit the section. Do not write "None" or keep an empty heading.
+- One bullet = one fact. Put names inline in that bullet — no People section.
+- If a section has no facts, omit the entire section. Do not write "None" or keep an empty heading.
+- Unrelated facts stay in different sections (a wait on Nico is not a Cursor spend).
 
 # Title
 One short line that names the point of the memo.
 
-# Action Items
-- Only work the speaker still has to do.
-- Past tense (finished, sent, told, built) is done — put it in Notes, not here.
-- Waiting on someone else ("once they send dates") is a Note, not a task.
-- A finding or problem ("reviews vanished") is a Note unless they said they will act on it.
-- Imperative. One task per line. Who/when only if they said it.
+# Do
+- Work the speaker still has to do (imperative).
+- Include who/when only if they said it.
 
-# People
-- Human proper names only, one per line.
-- Skip roles (manager), companies, teams, and "potential customer".
-- A garbled name stays as spoken. Do not clean it up.
+# Waiting
+- Blocked on someone else ("once they send dates"). Not a Do item.
 
-# Notes
-- Done work, waits, findings, dates, places, constraints.
-- Include a spoken company or unclear name if it is not a person.
+# Spent
+- Money they said they spent: vendor/what — amount (and date only if spoken).
+
+# Done
+- Past tense work already finished (sent, told, built, finished).
+
+# Context
+- Other facts worth keeping (findings, constraints, places) that are not Do/Waiting/Spent/Done.
 """.strip()
 
 _THINK = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)

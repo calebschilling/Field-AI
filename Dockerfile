@@ -12,7 +12,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY config.py audio.py db.py studio.py llm.py main.py worker.py enhance.py send_wav_file.py schema.sql inbox.html ./
+COPY config.py audio.py db.py studio.py llm.py main.py worker.py enhance.py notify.py send_wav_file.py schema.sql inbox.html ./
 
 # Production path. Compose bind-mounts ./data/audio on the host here
 # so wavs survive rebuilds and `docker compose down`.

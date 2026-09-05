@@ -2,7 +2,7 @@
 
 Voice memos in. Notes out.
 
-A field recorder drops a `.wav` here. Field-AI stores it, transcribes it on the Mac Studio, and writes a short note (title, action items, people, leftover facts). The inbox at `/` is the desk.
+A field recorder drops a `.wav` here. Field-AI stores it, transcribes it on the Mac Studio, and writes a short note (Title, Do, Waiting, Spent, Done, Context — empty sections omitted). The inbox at `/` is the desk.
 
 ```
 wav  →  Postgres + disk  →  Whisper  →  Qwen 2.5 14B  →  inbox

@@ -11,6 +11,7 @@ import time
 
 from db import claim_pending_enhance, mark_enhance_failed, mark_enhanced
 from llm import enhance_transcript
+from notify import notify_aria
 
 IDLE_SECONDS = 2
 
@@ -37,6 +38,7 @@ def process_one() -> bool:
         output_tokens=result.output_tokens,
         total_tokens=result.total_tokens,
     )
+    notify_aria(audio_id)
     preview = result.text if len(result.text) < 80 else result.text[:77] + "..."
     print(
         f"summarized  {audio_id}  "
