@@ -50,15 +50,8 @@ ALLOWED_SUFFIX = ".wav"
 # between syscall overhead and memory use.
 CHUNK_BYTES = 1024 * 1024
 
-# Bind address.
-#
-# 127.0.0.1 = this process only. Tailscale packets arrive on a different
-# interface (usually 100.x.x.x) and would never reach us.
-# 0.0.0.0    = every interface. In the HOST compose file that is the
-#              container's eth0; compose publishes host 8080 -> 8080
-#              so Tailscale-on-the-host can forward traffic in.
-# See docker-compose.yml.
-HOST = "0.0.0.0"
+# Bind address. Compose sets HOST to the Tailscale IP so LAN Wi‑Fi cannot
+# open the inbox. 0.0.0.0 would listen on every interface.
+HOST = (os.environ.get("HOST") or "0.0.0.0").strip() or "0.0.0.0"
 
-# Listen port inside the process. Compose maps host 8080 to this.
-PORT = 8080
+PORT = int(os.environ.get("PORT") or "8080")

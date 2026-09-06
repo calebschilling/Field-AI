@@ -55,7 +55,8 @@ cp .env.example .env
 
 | Variable | What it is |
 |---|---|
-| `DATABASE_URL` | Postgres. From Docker, use the host Tailscale IP, not `127.0.0.1`. |
+| `DATABASE_URL` | Postgres on the host. Tailscale IP or `127.0.0.1` (host network). |
+| `ARIA_INTAKE_URL` | Aria intake. Host network: `http://127.0.0.1:8787/skills/field-notes/ready`. |
 | `AUDIO_DIR` | Compose forces `/audio` (bind-mounted to `./data/audio` on the host). |
 | `TRANSCRIBE_URL` | Studio Whisper endpoint. |
 | `LLM_URL` / `LLM_MODEL` | Studio Ollama. Default model is `qwen2.5:14b`. |
@@ -68,9 +69,9 @@ docker compose up -d --build
 
 | Container | Job |
 |---|---|
-| `api` | Inbox + upload. Host **8081** → container 8080. |
+| `api` | Inbox + upload on host **8081**. |
 | `worker` | Oldest `queued` wav → Whisper → transcript. |
-| `enhancer` | Done transcript → structured note. |
+| `enhancer` | Done transcript → note → POST Aria. |
 
 Wavs survive rebuilds. They live on the host at `./data/audio`. `.env` is not in git.
 

@@ -15,39 +15,39 @@ from openai import OpenAI
 from config import LLM_API_KEY, LLM_MODEL, LLM_URL
 
 SYSTEM_PROMPT = """
-You extract a structured note from one raw voice-memo transcript.
+Extract a short note from one voice-memo transcript. Speaker is Caleb.
 
-The speaker is Caleb. Keep "I" as Caleb.
+Use only facts he said. Do not invent people, dates, places, tasks, or amounts.
+Copy names as spoken. Do not quote the transcript. Do not give advice.
+Do not copy these instructions into the note.
 
-Hard rules:
-- Use only facts in the transcript. Do not invent people, dates, places, tasks, or amounts.
-- Do not guess unclear names. Copy the spelling as spoken.
-- Do not quote the whole transcript back.
-- Do not add advice, context, or a preamble.
-- Do not infer "today", "scheduled", or why the memo was recorded.
-- Do not show reasoning. Output the markdown only.
-- One bullet = one fact. Put names inline in that bullet — no People section.
-- If a section has no facts, omit the entire section. Do not write "None" or keep an empty heading.
-- Unrelated facts stay in different sections (a wait on Nico is not a Cursor spend).
+Allowed headings, in this order. Skip a heading if it has no fact.
 
 # Title
-One short line that names the point of the memo.
+One short line.
 
 # Do
-- Work the speaker still has to do (imperative).
-- Include who/when only if they said it.
+Work he still has to do. Imperative. One fact per bullet.
 
 # Waiting
-- Blocked on someone else ("once they send dates"). Not a Do item.
+Blocked on someone else.
 
 # Spent
-- Money they said they spent: vendor/what — amount (and date only if spoken).
+Money he said he spent: what and how much.
 
 # Done
-- Past tense work already finished (sent, told, built, finished).
+Work already finished.
 
 # Context
-- Other facts worth keeping (findings, constraints, places) that are not Do/Waiting/Spent/Done.
+Other facts that are not Do, Waiting, Spent, or Done.
+
+Example — he said he biked with his dad and this is just a test:
+# Title
+Bike ride with Dad
+# Done
+- Went on a bike ride with Dad
+# Context
+- Test memo to end the day
 """.strip()
 
 _THINK = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
@@ -112,19 +112,6 @@ def _usage(response) -> tuple[int | None, int | None, int | None]:
     return prompt, output, total
 
 
-def _drop_empty_sections(md: str) -> str:
-    """Models sometimes emit '# Notes\\nNone'. The prompt already forbids that."""
-    blocks = re.split(r"(?m)(?=^# )", md)
-    kept = []
-    for block in blocks:
-        body = re.sub(r"^# .*\n?", "", block).strip()
-        if not body or body.lower() in {"none", "n/a", "- none"}:
-            if block.startswith("# "):
-                continue
-        kept.append(block.rstrip())
-    return "\n\n".join(p for p in kept if p).strip()
-
-
 def enhance_transcript(transcript: str) -> SummaryResult:
     """Return the markdown note plus token counts. Raises if the Studio is down."""
     transcript = (transcript or "").strip()
@@ -139,9 +126,7 @@ def enhance_transcript(transcript: str) -> SummaryResult:
         ],
         temperature=0.2,
     )
-    text = _drop_empty_sections(
-        _THINK.sub("", _content_text(response.choices[0].message)).strip()
-    )
+    text = _THINK.sub("", _content_text(response.choices[0].message)).strip()
     if not text:
         raise RuntimeError("LLM returned an empty note")
     used_model = getattr(response, "model", None) or LLM_MODEL
