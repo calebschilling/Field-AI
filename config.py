@@ -32,6 +32,12 @@ TRANSCRIBE_URL = os.environ.get(
     "http://100.121.55.88:8000/v1/audio/transcriptions",
 )
 
+# One claim: retry the HTTP call, then put the job back to queued.
+# The worker keeps claiming until the Studio answers. No max.
+STUDIO_RETRY_ATTEMPTS = 5
+STUDIO_RETRY_BASE_DELAY = 2.0
+STUDIO_RECONNECT_WAIT = 30
+
 # Same machine, Ollama / MLX chat. Used only by enhance.py.
 LLM_URL = os.environ.get("LLM_URL", "http://100.121.55.88:11434/v1")
 LLM_MODEL = os.environ.get("LLM_MODEL", "qwen2.5:14b")
@@ -40,7 +46,7 @@ LLM_API_KEY = os.environ.get("LLM_API_KEY", "ollama")
 # Hard cap. An unbounded upload will fill the disk. Raise this if your
 # field recordings are larger; the streaming write in audio.py still
 # never loads the whole file into RAM.
-MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
+MAX_UPLOAD_BYTES = 75 * 1024 * 1024  # 75 MB
 
 # We only accept this suffix. The real safety check is the file header
 # in audio.py — a renamed .exe called "note.wav" will still be rejected.
@@ -55,3 +61,7 @@ CHUNK_BYTES = 1024 * 1024
 HOST = (os.environ.get("HOST") or "0.0.0.0").strip() or "0.0.0.0"
 
 PORT = int(os.environ.get("PORT") or "8080")
+
+# Shared secret for /audio. ESP32, inbox, and Aria send it as X-Field-Key.
+# Funnel is public; without this anyone can upload or list notes.
+FIELD_UPLOAD_KEY = (os.environ.get("FIELD_UPLOAD_KEY") or "").strip()

@@ -321,7 +321,7 @@ def mark_agent(audio_id: str, status: str, note: str | None = None) -> dict | No
 
 
 def mark_failed(audio_id: str, error: str) -> None:
-    """Studio unreachable, bad response, missing file — keep the id, record why."""
+    """Bad response or missing file — keep the id, record why."""
     with connect() as conn:
         conn.execute(
             """
@@ -334,3 +334,98 @@ def mark_failed(audio_id: str, error: str) -> None:
             (error, audio_id),
         )
         conn.commit()
+
+
+def requeue_job(audio_id: str, error: str) -> None:
+    """Studio was down. Keep the wav; try again on the next claim."""
+    with connect() as conn:
+        conn.execute(
+            """
+            UPDATE audio_jobs
+            SET status = 'queued',
+                error = %s,
+                updated_at = now()
+            WHERE id = %s
+            """,
+            (error, audio_id),
+        )
+        conn.commit()
+
+
+def requeue_enhance(audio_id: str, error: str) -> None:
+    """Studio chat was down. Transcript stays; summary goes back to pending."""
+    with connect() as conn:
+        conn.execute(
+            """
+            UPDATE audio_jobs
+            SET summary_status = 'pending',
+                summary_error = %s,
+                updated_at = now()
+            WHERE id = %s
+            """,
+            (error, audio_id),
+        )
+        conn.commit()
+
+
+# Strings that mean "Mac Studio / Tailscale was unreachable", not a bad wav.
+_UNREACHABLE_SQL = """
+    error ILIKE '%Connection refused%'
+    OR error ILIKE '%Failed to establish a new connection%'
+    OR error ILIKE '%Max retries exceeded%'
+    OR error ILIKE '%NewConnectionError%'
+    OR error ILIKE '%ConnectionError%'
+    OR error ILIKE '%StudioUnavailable%'
+    OR error ILIKE '%APIConnectionError%'
+    OR error ILIKE '%ConnectError%'
+    OR error ILIKE '%ConnectTimeout%'
+    OR error ILIKE '%Network is unreachable%'
+    OR error ILIKE '%Name or service not known%'
+    OR error ILIKE '%Temporary failure in name resolution%'
+"""
+
+_SUMMARY_UNREACHABLE_SQL = _UNREACHABLE_SQL.replace("error", "summary_error")
+
+
+def recover_transcription_outage() -> dict[str, int]:
+    """Worker start: abandoned claims and connection-refused failures."""
+    with connect() as conn:
+        processing = conn.execute(
+            """
+            UPDATE audio_jobs
+            SET status = 'queued', updated_at = now()
+            WHERE status = 'processing'
+            """
+        ).rowcount
+        failed = conn.execute(
+            f"""
+            UPDATE audio_jobs
+            SET status = 'queued', updated_at = now()
+            WHERE status = 'failed'
+              AND ({_UNREACHABLE_SQL})
+            """
+        ).rowcount
+        conn.commit()
+    return {"processing": processing, "failed": failed}
+
+
+def recover_enhance_outage() -> dict[str, int]:
+    """Enhancer start: abandoned summaries and connection-refused failures."""
+    with connect() as conn:
+        processing = conn.execute(
+            """
+            UPDATE audio_jobs
+            SET summary_status = 'pending', updated_at = now()
+            WHERE summary_status = 'processing'
+            """
+        ).rowcount
+        failed = conn.execute(
+            f"""
+            UPDATE audio_jobs
+            SET summary_status = 'pending', updated_at = now()
+            WHERE summary_status = 'failed'
+              AND ({_SUMMARY_UNREACHABLE_SQL})
+            """
+        ).rowcount
+        conn.commit()
+    return {"summary_processing": processing, "summary_failed": failed}

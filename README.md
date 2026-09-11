@@ -31,7 +31,7 @@ From a phone, a recorder, or this machine:
 curl -F "file=@memo.wav" http://127.0.0.1:8081/audio
 ```
 
-Only real WAVs are accepted (header check, not just the filename). Cap is 50 MB. The response is the job id; the inbox is the human view.
+Only real WAVs are accepted (header check, not just the filename). Cap is 75 MB. The response is the job id; the inbox is the human view.
 
 API extras: `GET /audio`, `GET /audio/{id}`, `GET /audio/{id}/wav`, `DELETE /audio/{id}`, `GET /health`, `GET /docs`.
 

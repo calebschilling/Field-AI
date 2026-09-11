@@ -10,9 +10,10 @@ from dataclasses import dataclass
 import re
 
 import httpx
-from openai import OpenAI
+from openai import APIConnectionError, APIStatusError, APITimeoutError, OpenAI
 
 from config import LLM_API_KEY, LLM_MODEL, LLM_URL
+from reconnect import TransientStudioError, retry_call
 
 SYSTEM_PROMPT = """
 Extract a short note from one voice-memo transcript. Speaker is Caleb.
@@ -113,28 +114,45 @@ def _usage(response) -> tuple[int | None, int | None, int | None]:
 
 
 def enhance_transcript(transcript: str) -> SummaryResult:
-    """Return the markdown note plus token counts. Raises if the Studio is down."""
+    """Return the markdown note plus token counts. Raises StudioUnavailable if down."""
     transcript = (transcript or "").strip()
     if not transcript:
         raise RuntimeError("No transcript to summarize")
 
-    response = _client_once().chat.completions.create(
-        model=LLM_MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": transcript},
-        ],
-        temperature=0.2,
-    )
-    text = _THINK.sub("", _content_text(response.choices[0].message)).strip()
-    if not text:
-        raise RuntimeError("LLM returned an empty note")
-    used_model = getattr(response, "model", None) or LLM_MODEL
-    prompt, output, total = _usage(response)
-    return SummaryResult(
-        text=text,
-        model=used_model,
-        prompt_tokens=prompt,
-        output_tokens=output,
-        total_tokens=total,
+    def once() -> SummaryResult:
+        try:
+            response = _client_once().chat.completions.create(
+                model=LLM_MODEL,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": transcript},
+                ],
+                temperature=0.2,
+            )
+        except APIStatusError as exc:
+            if exc.status_code in (502, 503, 504):
+                raise TransientStudioError(str(exc)) from exc
+            raise
+        text = _THINK.sub("", _content_text(response.choices[0].message)).strip()
+        if not text:
+            raise RuntimeError("LLM returned an empty note")
+        used_model = getattr(response, "model", None) or LLM_MODEL
+        prompt, output, total = _usage(response)
+        return SummaryResult(
+            text=text,
+            model=used_model,
+            prompt_tokens=prompt,
+            output_tokens=output,
+            total_tokens=total,
+        )
+
+    return retry_call(
+        once,
+        transient=(
+            APIConnectionError,
+            APITimeoutError,
+            httpx.ConnectError,
+            httpx.TimeoutException,
+            TransientStudioError,
+        ),
     )

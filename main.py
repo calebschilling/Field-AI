@@ -24,25 +24,28 @@ The process listens on every interface (0.0.0.0) on port 8080 so that
 when this app later runs in its own container, the host can publish
 8080 and Tailscale-on-the-host can reach it.
 
-    curl -F "file=@recording.wav" http://127.0.0.1:8080/audio
+    curl -H "X-Field-Key: $FIELD_UPLOAD_KEY" -F "file=@recording.wav" http://127.0.0.1:8080/audio
 
 Interactive docs: http://127.0.0.1:8080/docs
 """
 
+import json
 import subprocess
 from datetime import date, datetime
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from audio import RejectedWav, accept_upload, audio_path, describe_job, remove_recording
-from config import HOST, PORT
+from config import FIELD_UPLOAD_KEY, HOST, PORT
 from db import list_jobs, mark_agent
 
 INBOX_HTML = Path(__file__).with_name("inbox.html")
+ASSETS_DIR = Path(__file__).with_name("assets")
 
 # `app` is what uvicorn loads: `uvicorn main:app`
 app = FastAPI(
@@ -50,11 +53,24 @@ app = FastAPI(
     description="Accept .wav uploads, queue them, transcribe on the Mac Studio.",
 )
 
+if ASSETS_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
+
+def require_field_key(x_field_key: str | None = Header(default=None)) -> None:
+    """Reject /audio calls that do not send the shared secret."""
+    if not FIELD_UPLOAD_KEY:
+        raise HTTPException(status_code=503, detail="FIELD_UPLOAD_KEY is not configured")
+    if not x_field_key or x_field_key != FIELD_UPLOAD_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing X-Field-Key")
+
 
 @app.get("/", response_class=HTMLResponse)
 async def inbox() -> str:
     """Human view of every recording + transcript."""
-    return INBOX_HTML.read_text(encoding="utf-8")
+    html = INBOX_HTML.read_text(encoding="utf-8")
+    snippet = f"<script>window.FIELD_KEY = {json.dumps(FIELD_UPLOAD_KEY)};</script>\n"
+    return html.replace("</head>", snippet + "</head>", 1)
 
 
 @app.get("/health")
@@ -68,7 +84,7 @@ class AgentUpdate(BaseModel):
     note: str | None = None
 
 
-@app.get("/audio")
+@app.get("/audio", dependencies=[Depends(require_field_key)])
 async def list_audio(
     agent_status: str | None = None,
     summary_status: str | None = None,
@@ -99,7 +115,7 @@ async def list_audio(
     )
 
 
-@app.post("/audio")
+@app.post("/audio", dependencies=[Depends(require_field_key)])
 async def upload_audio(file: UploadFile = File(...)) -> dict:
     """
     Accept one .wav as multipart/form-data.
@@ -115,7 +131,7 @@ async def upload_audio(file: UploadFile = File(...)) -> dict:
         await file.close()
 
 
-@app.get("/audio/{audio_id}/wav")
+@app.get("/audio/{audio_id}/wav", dependencies=[Depends(require_field_key)])
 async def get_wav(audio_id: str) -> FileResponse:
     """Play or download the stored file. Name in the URL is a UUID, not the original."""
     try:
@@ -127,7 +143,7 @@ async def get_wav(audio_id: str) -> FileResponse:
     return FileResponse(path, media_type="audio/wav", filename=path.name)
 
 
-@app.post("/audio/{audio_id}/agent")
+@app.post("/audio/{audio_id}/agent", dependencies=[Depends(require_field_key)])
 async def update_agent(audio_id: str, body: AgentUpdate) -> dict:
     """Aria marks a summarized note claimed / done / failed."""
     try:
@@ -139,7 +155,7 @@ async def update_agent(audio_id: str, body: AgentUpdate) -> dict:
     return row
 
 
-@app.get("/audio/{audio_id}")
+@app.get("/audio/{audio_id}", dependencies=[Depends(require_field_key)])
 async def get_audio(audio_id: str) -> dict:
     """Look up status + transcript. Same id the POST returned."""
     try:
@@ -148,7 +164,7 @@ async def get_audio(audio_id: str) -> dict:
         raise HTTPException(status_code=exc.status, detail=exc.message) from exc
 
 
-@app.delete("/audio/{audio_id}")
+@app.delete("/audio/{audio_id}", dependencies=[Depends(require_field_key)])
 async def delete_audio(audio_id: str) -> dict:
     """Remove one recording: Postgres row and wav file."""
     try:

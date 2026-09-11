@@ -9,9 +9,17 @@ A failure here never flips the wav job back to failed.
 
 import time
 
-from db import claim_pending_enhance, mark_enhance_failed, mark_enhanced
+from config import STUDIO_RECONNECT_WAIT
+from db import (
+    claim_pending_enhance,
+    mark_enhance_failed,
+    mark_enhanced,
+    recover_enhance_outage,
+    requeue_enhance,
+)
 from llm import enhance_transcript
 from notify import notify_aria
+from reconnect import StudioUnavailable
 
 IDLE_SECONDS = 2
 
@@ -25,6 +33,11 @@ def process_one() -> bool:
     print(f"summarizing {audio_id}  {job['original_name']}")
     try:
         result = enhance_transcript(job["transcript"])
+    except StudioUnavailable as exc:
+        requeue_enhance(audio_id, str(exc))
+        print(f"summary requeued  {audio_id}  studio down  {exc}")
+        time.sleep(STUDIO_RECONNECT_WAIT)
+        return True
     except Exception as exc:
         mark_enhance_failed(audio_id, str(exc))
         print(f"summary failed  {audio_id}  {exc}")
@@ -48,6 +61,10 @@ def process_one() -> bool:
 
 
 def main() -> None:
+    recovered = recover_enhance_outage()
+    n = sum(recovered.values())
+    if n:
+        print(f"recovered {n} jobs after studio outage  {recovered}")
     print("enhancer watching audio_jobs (status=done, summary_status=pending)")
     while True:
         if not process_one():

@@ -19,7 +19,9 @@ Read order:
 
 import time
 
-from db import claim_queued, mark_done, mark_failed
+from config import STUDIO_RECONNECT_WAIT
+from db import claim_queued, mark_done, mark_failed, recover_transcription_outage, requeue_job
+from reconnect import StudioUnavailable
 from studio import transcribe_wav
 
 # How long to wait when the queue is empty. Short enough that a reconnect
@@ -40,6 +42,11 @@ def process_one() -> bool:
     print(f"processing {audio_id}  {job['original_name']}")
     try:
         text = transcribe_wav(job["path"])
+    except StudioUnavailable as exc:
+        requeue_job(audio_id, str(exc))
+        print(f"requeued   {audio_id}  studio down  {exc}")
+        time.sleep(STUDIO_RECONNECT_WAIT)
+        return True
     except Exception as exc:
         mark_failed(audio_id, str(exc))
         print(f"failed     {audio_id}  {exc}")
@@ -52,6 +59,10 @@ def process_one() -> bool:
 
 
 def main() -> None:
+    recovered = recover_transcription_outage()
+    n = sum(recovered.values())
+    if n:
+        print(f"recovered {n} jobs after studio outage  {recovered}")
     print("worker watching audio_jobs (status=queued)")
     while True:
         if not process_one():
